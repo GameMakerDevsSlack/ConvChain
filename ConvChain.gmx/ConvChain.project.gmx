@@ -25,6 +25,9 @@
     <script>scripts\ds_grid_regionize.gml</script>
     <script>scripts\ds_grid_regions_to_surface.gml</script>
   </scripts>
+  <fonts name="fonts">
+    <font>fonts\fnt_default</font>
+  </fonts>
   <objects name="objects">
     <object>objects\obj_test</object>
   </objects>

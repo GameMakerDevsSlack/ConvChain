@@ -1,4 +1,4 @@
-///conv_create( pattern size, variance, output size, all directions )
+///conv_create( pattern size, variance, output size, multidirectional )
 
 var _sample_grid    = argument0;
 var _pattern_size   = argument1;

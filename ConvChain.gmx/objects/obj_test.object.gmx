@@ -27,12 +27,13 @@
             <kind>1</kind>
             <string>///Create
 
-test_iterations     = 50;
-test_iterations_sum = 0;
-test_seed           = 1;
-test_pattern_size   = 3;
-test_variance       = 0.6;
-test_output_size    = 40;
+test_iterations       = 100;
+test_iterations_sum   = 0;
+test_seed             = 1;
+test_pattern_size     = 3;
+test_variance         = 0.5;
+test_output_size      = 80;
+test_multidirectional = false;
 
 srf_sample = noone;
 srf_regions = noone;
@@ -114,27 +115,32 @@ if ( surface_exists( srf_sample ) ) {
     }
     
     if ( keyboard_check_pressed( ord( "S" ) ) ) { test_seed = irandom_range( -(1&lt;&lt;31), 1&lt;&lt;32 ); test_regen = true; }
-    if ( keyboard_check_pressed( vk_up      ) ) test_iterations = clamp( test_iterations + 5, 1, 100 );
-    if ( keyboard_check_pressed( vk_down    ) ) test_iterations = clamp( test_iterations - 5, 1, 100 );
-    if ( keyboard_check_pressed( vk_left    ) ) test_variance = clamp( test_variance - 0.3, 0, 5 );
-    if ( keyboard_check_pressed( vk_right   ) ) test_variance = clamp( test_variance + 0.3, 0, 5 );
-        
+    if ( keyboard_check_pressed( vk_up      ) ) test_iterations = clamp( test_iterations + 10, 1, 200 );
+    if ( keyboard_check_pressed( vk_down    ) ) test_iterations = clamp( test_iterations - 10, 1, 200 );
+    if ( keyboard_check_pressed( vk_left    ) ) test_variance = clamp( test_variance - 0.1, 0, 1 );
+    if ( keyboard_check_pressed( vk_right   ) ) test_variance = clamp( test_variance + 0.1, 0, 1 );
+    if ( keyboard_check_pressed( ord( "U" ) ) ) { test_multidirectional = !test_multidirectional; test_regen = true; }
+    
     if ( keyboard_check_pressed( ord( "R" ) ) ) or ( test_regen ) {
         test_regen = true;
         test_iterations_sum = 0;
         random_set_seed( test_seed );
         grd_sample = conv_surface_to_grid( srf_sample );
-        convchain_sample = conv_create( grd_sample, test_pattern_size, test_variance, test_output_size, true );
+        convchain_sample = conv_create( grd_sample, test_pattern_size, test_variance, test_output_size, test_multidirectional );
         conv_randomise( convchain_sample );
-    }
-    
-    if ( keyboard_check( ord( "I" ) ) ) or ( test_regen ) {
-        conv_iterate( convchain_sample, test_iterations );
         grd_regions = ds_grid_regionize( convchain_sample[? "field" ] );
         region_count = global.ds_grid_regionize_regions;
         srf_regions = ds_grid_regions_to_surface( grd_regions, region_count );
         test_iterations_sum += test_iterations;
         test_regen = false;
+    }
+    
+    if ( keyboard_check( vk_space ) ) {
+        conv_iterate( convchain_sample, test_iterations );
+        grd_regions = ds_grid_regionize( convchain_sample[? "field" ] );
+        region_count = global.ds_grid_regionize_regions;
+        srf_regions = ds_grid_regions_to_surface( grd_regions, region_count );
+        test_iterations_sum += test_iterations;
     }
     
 }
@@ -162,33 +168,36 @@ if ( surface_exists( srf_sample ) ) {
             <kind>1</kind>
             <string>///Draw
 
-var _size = test_output_size*12;
+var _size = test_output_size*9;
 
 draw_surface_ext( srf_regions,
-                  room_width*0.5 - _size*0.5, room_height*0.5 - _size*0.5,
-                  12, 12, 0, c_white, 1 );
+                  room_width - 10 - _size, 0.5*( room_height - _size ),
+                  9, 9, 0, c_white, 1 );
 
 draw_surface_ext( srf_sample, 10, 10,   10, 10, 0,   c_white, 1 );
 
+draw_set_font( fnt_default );
 draw_set_colour( c_white );
 
 var _str = "[R]=regen";
-_str += "#[I]=iterate";
+_str += "#[Space]=iterate";
 _str += "#[N]=invert";
 _str += "#[S]=new seed";
 _str += "#[Lmb/Rmb]=draw";
-_str += "#[Up/Down]=iterations per tick (" + string( test_iterations ) + ")";
+_str += "#[Up/Down]=iterations/tick (" + string( test_iterations ) + ")";
 _str += "#[Left/Right]=variance";
+_str += "#[U]=directionality";
 _str += "##seed=" + string( test_seed );
 _str += "#total iterations=" + string( test_iterations_sum );
 _str += "#variance=" + string( test_variance );
 _str += "#pattern size=" + string( test_pattern_size );
+if ( test_multidirectional ) _str += "#multidirectional" else _str += "#unidirectional";
 
-var _x = surface_get_width( srf_sample );
+var _y = surface_get_height( srf_sample );
 draw_set_colour( c_black );
-draw_text( 10*_x + 11, 11, _str );
+draw_text( 11, _y*10 + 21, _str );
 draw_set_colour( c_white );
-draw_text( 10*_x + 10, 10, _str );
+draw_text( 10, _y*10 + 20, _str );
 </string>
           </argument>
         </arguments>
